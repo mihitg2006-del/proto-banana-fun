@@ -1,143 +1,24 @@
-import type { Rule } from "./types";
+import type { LegalRule } from "./types";
+import { LEGAL_METROLOGY_RULES, DATASET_META } from "@/data/legalMetrologyRules";
 
 /**
- * Prototype rule configuration derived from the SIH problem statement and a demo
- * rule set inspired by the Legal Metrology (Packaged Commodities) Rules, 2011.
- * These are CONFIGURABLE prototype requirements, not an authoritative legal text.
+ * Rule configuration is derived from the LOCAL Legal Metrology dataset
+ * (src/data/legalMetrologyRules.ts). Nothing is fetched at runtime; only the
+ * per-rule `enabled` toggle is persisted in localStorage.
  */
-export const DEFAULT_RULES: Rule[] = [
-  {
-    rule_id: "LM-PC-001",
-    field: "mrp",
-    requirement: "Maximum Retail Price (MRP) must be declared",
-    severity: "Critical",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-002",
-    field: "mrp",
-    requirement: "MRP must be printed with currency and an inclusive-of-taxes style declaration",
-    severity: "High",
-    validation_type: "format",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-003",
-    field: "net_quantity",
-    requirement: "Net quantity must be declared",
-    severity: "Critical",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-004",
-    field: "unit",
-    requirement: "Net quantity must use a standard unit (g, kg, ml, L, N/pcs)",
-    severity: "High",
-    validation_type: "format",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-005",
-    field: "manufacturer_name",
-    requirement: "Name of manufacturer / packer / importer must be declared",
-    severity: "Critical",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-006",
-    field: "manufacturer_address",
-    requirement: "Complete address of manufacturer / packer / importer must be declared",
-    severity: "Critical",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-007",
-    field: "care_phone",
-    requirement: "Consumer care contact number must be declared",
-    severity: "High",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-008",
-    field: "care_email",
-    requirement: "Consumer care email or website must be declared",
-    severity: "Medium",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-009",
-    field: "mfg_date",
-    requirement: "Month and year of manufacture / packing must be declared",
-    severity: "High",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-010",
-    field: "expiry_date",
-    requirement: "Best before / use by declaration must be present for applicable commodities",
-    severity: "Medium",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-011",
-    field: "country_of_origin",
-    requirement: "Country of origin must be declared for imported commodities",
-    severity: "Medium",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-012",
-    field: "batch_no",
-    requirement: "Batch / lot / code number must be declared",
-    severity: "Medium",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-013",
-    field: "product_name",
-    requirement: "Name / common name of the commodity must be declared",
-    severity: "High",
-    validation_type: "presence",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-014",
-    field: "mrp",
-    requirement: "Only one unambiguous MRP value should appear on the principal display panel",
-    severity: "Critical",
-    validation_type: "consistency",
-    enabled: true,
-  },
-  {
-    rule_id: "LM-PC-015",
-    field: "multiple",
-    requirement: "Declarations must be legible and free of suspicious or malformed values",
-    severity: "High",
-    validation_type: "sanity",
-    enabled: true,
-  },
-];
+export const DEFAULT_RULES: LegalRule[] = LEGAL_METROLOGY_RULES;
+export const RULES_DATASET = DATASET_META;
 
-const KEY = "slmi_rules_v1";
+const KEY = "slmi_rules_v2";
 
-export function loadRules(): Rule[] {
+export function loadRules(): LegalRule[] {
   if (typeof window === "undefined") return DEFAULT_RULES;
   try {
     const raw = window.localStorage.getItem(KEY);
     if (!raw) return DEFAULT_RULES;
-    const saved = JSON.parse(raw) as Rule[];
+    const saved = JSON.parse(raw) as Array<{ id: string; enabled: boolean }>;
     return DEFAULT_RULES.map((r) => {
-      const match = saved.find((s) => s.rule_id === r.rule_id);
+      const match = saved.find((s) => s.id === r.id);
       return match ? { ...r, enabled: match.enabled } : r;
     });
   } catch {
@@ -145,7 +26,10 @@ export function loadRules(): Rule[] {
   }
 }
 
-export function saveRules(rules: Rule[]) {
+export function saveRules(rules: LegalRule[]) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(KEY, JSON.stringify(rules));
+  window.localStorage.setItem(
+    KEY,
+    JSON.stringify(rules.map((r) => ({ id: r.id, enabled: r.enabled }))),
+  );
 }

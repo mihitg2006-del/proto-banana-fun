@@ -92,8 +92,8 @@ export function analyseMrp(text: string, ls: string[]): MrpAnalysis {
   while ((m = re.exec(text))) candidates.push(clean(m[0]));
 
   const first = candidates[0] ?? null;
-  const numMatch = first?.match(/([0-9]+(?:[.,][0-9]{1,2})?)/);
-  const value = numMatch ? Number(numMatch[1].replace(",", ".")) : null;
+  const numMatch = first ? first.match(/([0-9]+(?:[.,][0-9]{1,2})?)/) : null;
+  const value = numMatch?.[1] ? Number(numMatch[1].replace(",", ".")) : null;
   const currency = first ? (first.match(/₹|rs\.?|inr/i)?.[0] ?? null) : null;
   const inclusiveOfTaxes = /incl(usive)?\.? of all taxes/i.test(text);
 
@@ -180,8 +180,8 @@ export function analyseQuantity(text: string, ls: string[]): QuantityAnalysis {
     };
   }
 
-  const number = Number(m[1].replace(",", "."));
-  const unitRaw = m[2].toLowerCase();
+  const number = Number((m[1] ?? "").replace(",", "."));
+  const unitRaw = (m[2] ?? "").toLowerCase();
   const mapped = UNIT_MAP[unitRaw];
   if (!mapped) issues.push(`Unit "${unitRaw}" is not a recognised standard unit.`);
   if (!Number.isFinite(number) || number <= 0) issues.push("Quantity number looks invalid.");
@@ -210,7 +210,13 @@ export function extractFields(rawText: string, ocrConfidence: number): Extractio
 
   // Product name: explicit label, else the longest of the first 3 lines.
   const nameLine = findLine(ls, /^(product|name)\s*[:\-]/i);
-  const guessName = ls.slice(0, 3).sort((a, b) => b.length - a.length)[0] ?? null;
+  const SKIP_NAME =
+    /^(manufactured|marketed|mfd|packed|imported|net\s*(wt|weight|qty|quantity|vol)|m\.?r\.?p|price|maximum retail|batch|mfg|best before|use by|consumer care|email|country of origin|plot|address|survey|shed|unit no)/i;
+  const guessName =
+    ls
+      .slice(0, 4)
+      .filter((l) => !SKIP_NAME.test(l) && !/\b\d{6}\b/.test(l) && !/,/.test(l))
+      .sort((a, b) => b.length - a.length)[0] ?? null;
   const productName = nameLine ? nameLine.replace(/^(product|name)\s*[:\-]\s*/i, "") : guessName;
   fields.push(
     mk("product_name", productName, conf(ocrConfidence, nameLine ? 92 : 62, Boolean(nameLine)), nameLine ?? guessName),
@@ -222,7 +228,7 @@ export function extractFields(rawText: string, ocrConfidence: number): Extractio
 
   const mfgLine = findLine(ls, /(manufactured|marketed|mfd)\s*(by|&\s*packed by)|manufacturer\s*[:\-]/i);
   const mfgName = mfgLine
-    ? mfgLine.replace(/.*?(by|manufacturer)\s*[:\-]?\s*/i, "").split(",")[0]
+    ? mfgLine.replace(/.*?(by|manufacturer)\s*[:\-]?\s*/i, "").split(",")[0] ?? null
     : null;
   fields.push(mk("manufacturer_name", mfgName, conf(ocrConfidence, mfgLine ? 93 : 0, Boolean(mfgLine)), mfgLine));
 

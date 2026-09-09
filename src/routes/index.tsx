@@ -16,6 +16,7 @@ import {
 } from "recharts";
 import { AppShell } from "@/components/lm/AppShell";
 import { StatusBadge, ScoreRing } from "@/components/lm/bits";
+import { DatasetStatus } from "@/components/lm/DatasetStatus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { listInspections } from "@/lib/lm/store";
@@ -147,6 +148,10 @@ function Dashboard() {
         </>
       }
     >
+      <div className="mb-5">
+        <DatasetStatus />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <Stat label="Total Products Inspected" value={total} icon={PackageCheck} />
         <Stat label="Compliant Products" value={compliant} icon={PackageCheck} tone="success" />
