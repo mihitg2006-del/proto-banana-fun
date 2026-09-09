@@ -1,5 +1,6 @@
 import { extractFields } from "./extract";
-import { runCompliance, computeScore, statusFromChecks } from "./compliance";
+import { runComplianceCheck, computeScore, statusFromChecks } from "@/services/complianceEngine";
+import { detectCategory } from "@/services/categoryDetection";
 import { loadRules } from "./rules";
 import { preprocessImage, runOcr, type OcrWord, type PreprocessResult } from "./ocr";
 import { nextInspectionId, saveInspection } from "./store";
@@ -18,11 +19,11 @@ export const STEPS = [
 export interface PipelineInput {
   imageDataUrl: string;
   source: "upload" | "camera" | "sample";
-  sampleId?: string;
+  sampleId?: string | undefined;
   /** Predefined text used in demo mode or as an OCR fallback. */
-  fallbackText?: string;
-  fallbackConfidence?: number;
-  useDemoText?: boolean;
+  fallbackText?: string | undefined;
+  fallbackConfidence?: number | undefined;
+  useDemoText?: boolean | undefined;
 }
 
 export interface PipelineOutput {
@@ -59,7 +60,7 @@ function buildRegions(fields: ExtractedField[], words: OcrWord[]): LabelRegion[]
       detected.length === 0 ? "red" : detected.length < groupFields.length || avgConf < 70 ? "yellow" : "green";
 
     // Prefer real OCR bounding boxes for the detected values.
-    let box = FALLBACK_BOXES[group.key];
+    let box = FALLBACK_BOXES[group.key] ?? { x: 0.05, y: 0.05, w: 0.9, h: 0.1 };
     const tokens = detected
       .flatMap((f) => (f.value ?? "").split(/\s+/))
       .map((t) => t.replace(/[^\w₹.@/-]/g, "").toLowerCase())
@@ -131,7 +132,9 @@ export async function runPipeline(
 
   onStep(4);
   const rules = loadRules();
-  const checks = runCompliance(extraction, rules);
+  const detectedName = extraction.fields.find((f) => f.key === "product_name")?.value ?? null;
+  const cat = detectCategory(detectedName, text);
+  const checks = runComplianceCheck(extraction, cat.category, rules, cat.confidence);
   await wait(400);
 
   onStep(5);
@@ -155,6 +158,9 @@ export async function runPipeline(
     status,
     regions: buildRegions(extraction.fields, words),
     notes: "",
+    category: cat.category,
+    categoryConfidence: cat.confidence,
+    categoryVerificationRequired: cat.verificationRequired,
   };
   saveInspection(inspection);
   await wait(250);

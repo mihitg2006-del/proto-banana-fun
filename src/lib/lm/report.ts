@@ -41,6 +41,12 @@ export async function generateReport(insp: Inspection) {
   kv("Product Name", insp.productName);
   kv("Source", insp.source);
   kv("OCR Confidence", `${insp.ocrConfidence}%`);
+  kv(
+    "Category",
+    `${insp.category ?? "UNKNOWN"} (${Math.round(insp.categoryConfidence ?? 0)}% confidence)${
+      insp.categoryVerificationRequired ? " — inspector verification required" : ""
+    }`,
+  );
   kv("Prototype Score", `${insp.score.total}/100 (${insp.status})`);
 
   y += 6;
@@ -129,6 +135,8 @@ export async function generateReport(insp: Inspection) {
         `Why flagged: ${c.why}`,
         `Detected evidence: ${c.evidence}`,
         `Suggested action: ${c.action}`,
+        `Source: ${c.source ?? "Legal Metrology (Packaged Commodities) Rules, 2011"}`,
+        `Inspector verification: ${c.verificationRequired ? "Required" : "Not required"}`,
       ]) {
         const wrapped = doc.splitTextToSize(line, W - 2 * M - 10);
         doc.text(wrapped, M + 10, y);
@@ -144,6 +152,23 @@ export async function generateReport(insp: Inspection) {
 
   detailBlock(`Warnings (${warned.length})`, warned);
   detailBlock(`Violations (${failed.length})`, failed);
+
+  const verify = insp.checks.filter((c) => c.verificationRequired);
+  y += 10;
+  section(`Inspector Verification Required (${verify.length})`);
+  doc.setFontSize(9).setFont("helvetica", "normal");
+  for (const c of verify) {
+    if (y > 780) {
+      doc.addPage();
+      y = 60;
+    }
+    doc.text(doc.splitTextToSize(`${c.rule_id} — ${c.requirement}`, W - 2 * M), M, y);
+    y += 13;
+  }
+  if (!verify.length) {
+    doc.text("None", M, y);
+    y += 13;
+  }
 
   y += 10;
   section("Inspector Notes");

@@ -43,7 +43,7 @@ export async function preprocessImage(dataUrl: string): Promise<PreprocessResult
   let min = 255;
   let max = 0;
   for (let i = 0, p = 0; i < d.length; i += 4, p++) {
-    const g = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    const g = 0.299 * d[i]! + 0.587 * d[i + 1]! + 0.114 * d[i + 2]!;
     gray[p] = g;
     sum += g;
     if (g < min) min = g;
@@ -51,13 +51,13 @@ export async function preprocessImage(dataUrl: string): Promise<PreprocessResult
   }
   const mean = sum / gray.length;
   let variance = 0;
-  for (let p = 0; p < gray.length; p++) variance += (gray[p] - mean) ** 2;
+  for (let p = 0; p < gray.length; p++) variance += (gray[p]! - mean) ** 2;
   const stdDev = Math.sqrt(variance / gray.length);
 
   // Contrast stretch
   const range = Math.max(1, max - min);
   const stretched = new Float32Array(gray.length);
-  for (let p = 0; p < gray.length; p++) stretched[p] = ((gray[p] - min) / range) * 255;
+  for (let p = 0; p < gray.length; p++) stretched[p] = ((gray[p]! - min) / range) * 255;
 
   // 3x3 mean blur for noise, then unsharp mask
   const blurred = new Float32Array(gray.length);
@@ -70,7 +70,7 @@ export async function preprocessImage(dataUrl: string): Promise<PreprocessResult
           const nx = x + dx;
           const ny = y + dy;
           if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-          acc += stretched[ny * w + nx];
+          acc += stretched[ny * w + nx]!;
           n++;
         }
       }
@@ -79,7 +79,7 @@ export async function preprocessImage(dataUrl: string): Promise<PreprocessResult
   }
 
   for (let p = 0, i = 0; p < gray.length; p++, i += 4) {
-    const sharp = Math.max(0, Math.min(255, stretched[p] + 1.1 * (stretched[p] - blurred[p])));
+    const sharp = Math.max(0, Math.min(255, stretched[p]! + 1.1 * (stretched[p]! - blurred[p]!)));
     d[i] = d[i + 1] = d[i + 2] = sharp;
     d[i + 3] = 255;
   }
