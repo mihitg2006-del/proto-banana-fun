@@ -211,9 +211,12 @@ export function extractFields(rawText: string, ocrConfidence: number): Extractio
   // Product name: explicit label, else the longest of the first 3 lines.
   const nameLine = findLine(ls, /^(product|name)\s*[:\-]/i);
   const SKIP_NAME =
-    /^(manufactured|marketed|mfd|packed|imported|net\s*(wt|weight|qty|quantity|vol)|m\.?r\.?p|price|maximum retail|batch|mfg|best before|use by|consumer care|email|country of origin|plot|address)/i;
+    /^(manufactured|marketed|mfd|packed|imported|net\s*(wt|weight|qty|quantity|vol)|m\.?r\.?p|price|maximum retail|batch|mfg|best before|use by|consumer care|email|country of origin|plot|address|survey|shed|unit no)/i;
   const guessName =
-    ls.slice(0, 4).filter((l) => !SKIP_NAME.test(l)).sort((a, b) => b.length - a.length)[0] ?? null;
+    ls
+      .slice(0, 4)
+      .filter((l) => !SKIP_NAME.test(l) && !/\b\d{6}\b/.test(l) && !/,/.test(l))
+      .sort((a, b) => b.length - a.length)[0] ?? null;
   const productName = nameLine ? nameLine.replace(/^(product|name)\s*[:\-]\s*/i, "") : guessName;
   fields.push(
     mk("product_name", productName, conf(ocrConfidence, nameLine ? 92 : 62, Boolean(nameLine)), nameLine ?? guessName),
