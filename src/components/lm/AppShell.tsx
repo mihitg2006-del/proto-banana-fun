@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   ScanLine,
@@ -7,9 +7,22 @@ import {
   FileText,
   GitCompareArrows,
   ShieldCheck,
+  UserRound,
+  LogOut,
+  Loader2,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useOfficer } from "@/lib/auth/officer-context";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -32,6 +45,67 @@ export function AppShell({
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
+  const { officer, loading, isAuthenticated, signOut } = useOfficer();
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate({
+        to: "/login",
+        search: { redirect: pathname },
+        replace: true,
+      });
+    }
+  }, [loading, isAuthenticated, navigate, pathname]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate({ to: "/login", search: { redirect: undefined }, replace: true });
+  };
+
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          {loading ? "Verifying officer session…" : "Redirecting to Officer Login…"}
+        </p>
+      </div>
+    );
+  }
+
+  const officerMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <UserRound className="size-4" />
+          <span className="max-w-[10rem] truncate">{officer?.full_name ?? "Officer"}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="font-normal">
+          <p className="text-sm font-semibold">{officer?.full_name ?? "Officer"}</p>
+          <p className="text-xs text-muted-foreground">{officer?.officer_id}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{officer?.designation}</p>
+          <p className="text-xs text-muted-foreground">
+            {[officer?.district, officer?.state].filter(Boolean).join(", ")}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">Role: {officer?.role}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link to="/profile">
+            <UserRound className="size-4" />
+            Officer Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="size-4" />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -66,8 +140,15 @@ export function AppShell({
             );
           })}
         </nav>
-        <div className="border-t border-sidebar-border px-5 py-4 text-[11px] leading-relaxed opacity-70">
-          SIH 2026 · PS 26034 prototype. AI-assisted tool — not an official legal determination.
+        <div className="border-t border-sidebar-border px-5 py-4 text-[11px] leading-relaxed">
+          <p className="text-[10px] font-semibold uppercase tracking-wide opacity-60">Officer</p>
+          <p className="mt-1 text-sm font-medium">{officer?.full_name ?? "—"}</p>
+          <p className="opacity-70">{officer?.officer_id}</p>
+          <p className="opacity-70">{officer?.designation}</p>
+          <p className="opacity-70">{[officer?.district, officer?.state].filter(Boolean).join(", ")}</p>
+          <p className="mt-3 border-t border-sidebar-border pt-3 opacity-70">
+            SIH 2026 · PS 26034 prototype. AI-assisted tool — not an official legal determination.
+          </p>
         </div>
       </aside>
 
@@ -79,7 +160,10 @@ export function AppShell({
               <h1 className="truncate text-lg font-semibold tracking-tight">{title}</h1>
               {subtitle ? <p className="text-sm text-muted-foreground">{subtitle}</p> : null}
             </div>
-            <div className="flex flex-wrap items-center gap-2">{actions}</div>
+            <div className="flex flex-wrap items-center gap-2">
+              {actions}
+              {officerMenu}
+            </div>
           </div>
           <nav className="flex gap-1 overflow-x-auto border-t px-3 py-2 md:hidden">
             {NAV.map((item) => (

@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as InspectRouteImport } from './routes/inspect'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as InspectionIdRouteImport } from './routes/inspection/$id'
@@ -37,6 +39,16 @@ const InspectRoute = InspectRouteImport.update({
   path: '/inspect',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -58,6 +70,8 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/history': typeof HistoryRoute
   '/inspect': typeof InspectRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/rules': typeof RulesRoute
   '/inspection/$id': typeof InspectionIdRoute
@@ -67,6 +81,8 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/history': typeof HistoryRoute
   '/inspect': typeof InspectRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/rules': typeof RulesRoute
   '/inspection/$id': typeof InspectionIdRoute
@@ -77,6 +93,8 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/history': typeof HistoryRoute
   '/inspect': typeof InspectRoute
+  '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/rules': typeof RulesRoute
   '/inspection/$id': typeof InspectionIdRoute
@@ -88,6 +106,8 @@ export interface FileRouteTypes {
     | '/compare'
     | '/history'
     | '/inspect'
+    | '/login'
+    | '/profile'
     | '/reports'
     | '/rules'
     | '/inspection/$id'
@@ -97,6 +117,8 @@ export interface FileRouteTypes {
     | '/compare'
     | '/history'
     | '/inspect'
+    | '/login'
+    | '/profile'
     | '/reports'
     | '/rules'
     | '/inspection/$id'
@@ -106,6 +128,8 @@ export interface FileRouteTypes {
     | '/compare'
     | '/history'
     | '/inspect'
+    | '/login'
+    | '/profile'
     | '/reports'
     | '/rules'
     | '/inspection/$id'
@@ -116,6 +140,8 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   HistoryRoute: typeof HistoryRoute
   InspectRoute: typeof InspectRoute
+  LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   RulesRoute: typeof RulesRoute
   InspectionIdRoute: typeof InspectionIdRoute
@@ -151,6 +177,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InspectRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reports': {
       id: '/reports'
       path: '/reports'
@@ -180,6 +220,8 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   HistoryRoute: HistoryRoute,
   InspectRoute: InspectRoute,
+  LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   RulesRoute: RulesRoute,
   InspectionIdRoute: InspectionIdRoute,
