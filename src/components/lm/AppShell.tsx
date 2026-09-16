@@ -49,10 +49,10 @@ export function AppShell({
   const { officer, loading, isAuthenticated, signOut } = useOfficer();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!loading && !isAuthenticated && !pathname.startsWith("/login")) {
       navigate({
         to: "/login",
-        search: { redirect: pathname },
+        search: { redirect: pathname === "/" ? undefined : pathname },
         replace: true,
       });
     }
