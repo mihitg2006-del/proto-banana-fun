@@ -276,7 +276,11 @@ function RegisterPage() {
           </form>
 
           <div className="mt-6 border-t pt-4 text-center text-sm">
-            <Link to="/login" className="inline-flex items-center gap-1.5 text-primary hover:underline">
+            <Link
+              to="/login"
+              search={{ redirect: undefined }}
+              className="inline-flex items-center gap-1.5 text-primary hover:underline"
+            >
               <ArrowLeft className="size-4" />
               Back to Officer Login
             </Link>
