@@ -243,14 +243,14 @@ function LoginPage() {
             </form>
 
             <div className="mt-6 rounded-md border bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-              <p className="font-medium text-foreground">Demo officer accounts (SIH prototype)</p>
-              <p className="mt-1">officer001@veripack.demo · LM-OFFICER-001 · Bhopal</p>
-              <p>officer002@veripack.demo · LM-OFFICER-002 · Indore</p>
-              <p className="mt-1">Password is shared separately with the evaluation panel.</p>
+              <p className="font-medium text-foreground">{"\n"}</p>
+              <p className="mt-1">{"\n"}</p>
+              <p>{"\n"}</p>
+              <p className="mt-1">{"\n"}</p>
             </div>
 
             <p className="mt-6 border-t pt-4 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              Authorized Officer Access Only
+              {"\n"}
             </p>
           </section>
         </div>
