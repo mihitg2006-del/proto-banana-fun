@@ -1,6 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShieldCheck, Lock, Loader2, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Lock, Loader2, AlertTriangle, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOfficer } from "@/lib/auth/officer-context";
 import { Button } from "@/components/ui/button";
@@ -240,17 +240,27 @@ function LoginPage() {
                 {busy ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
                 Login
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => navigate({ to: "/register" })}
+              >
+                <UserPlus className="size-4" />
+                Create Officer Account
+              </Button>
             </form>
 
-            <div className="mt-6 rounded-md border bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-              <p className="font-medium text-foreground">{"\n"}</p>
-              <p className="mt-1">{"\n"}</p>
-              <p>{"\n"}</p>
-              <p className="mt-1">{"\n"}</p>
-            </div>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              New officer?{" "}
+              <Link to="/register" className="font-medium text-primary hover:underline">
+                Create an account
+              </Link>
+            </p>
 
             <p className="mt-6 border-t pt-4 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {"\n"}
+              Authorized Officer Access Only
             </p>
           </section>
         </div>
